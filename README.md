@@ -1,4 +1,6 @@
 # goscheduler
 
-gocron is a simple scheduler with POSIX cron syntax.
-It can run go-functions or external applications in an seperate go-routine.
+goscheduler is a simple but powerfull scheduler that will create job and execute them according to a specified cron schedule.
+It will run everything in separate go routines and has good error handling.
+
+See below for examples.
