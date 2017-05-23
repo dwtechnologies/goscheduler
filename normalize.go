@@ -22,15 +22,15 @@ type conversion map[string]string
 func (cron *cron) normalizeCron() (*string, error) {
 	// Replace any macros with a real cron data string. If it did replace we don't need to do anymore parsing. Just returned the changed cron-string.
 	normalized := cron.convertMarcos()
-	if *cron.raw != *normalized {
+	if cron.raw != *normalized {
 		return normalized, nil
 	}
 
-	slice := strings.Split(*cron.raw, columnSeparator)
+	slice := strings.Split(cron.raw, columnSeparator)
 	if len(slice) != 5 {
-		return nil, fmt.Errorf("Cron syntax error. Current syntax is \"%v\" and has %v columns. Must be 5 columns seperated by <space>", *cron.raw, len(slice))
+		return nil, fmt.Errorf("Cron syntax error. Current syntax is \"%v\" and has %v columns. Must be 5 columns seperated by <space>", cron.raw, len(slice))
 	}
-	cron.columns = &cronColumns{minutes: &slice[0], hours: &slice[1], daysOfMonth: &slice[2], months: cron.convertMonths(&slice[3]), daysOfWeek: cron.convertDaysOfWeek(&slice[4])}
+	cron.columns = &cronColumns{minutes: slice[0], hours: slice[1], daysOfMonth: slice[2], months: *cron.convertMonths(&(slice)[3]), daysOfWeek: *cron.convertDaysOfWeek(&slice[4])}
 
 	// Validate the cron values.
 	err := cron.validateAndSimplify()
@@ -39,6 +39,6 @@ func (cron *cron) normalizeCron() (*string, error) {
 	}
 
 	// Create cron from the converted and validated slice.
-	cronstring := fmt.Sprintf("%v %v %v %v %v", *cron.columns.minutes, *cron.columns.hours, *cron.columns.daysOfMonth, *cron.columns.months, *cron.columns.daysOfWeek)
+	cronstring := fmt.Sprintf("%v %v %v %v %v", cron.columns.minutes, cron.columns.hours, cron.columns.daysOfMonth, cron.columns.months, cron.columns.daysOfWeek)
 	return &cronstring, nil
 }

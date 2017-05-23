@@ -15,7 +15,7 @@ const (
 // addWeekdaysToDaysOfMonth will convert any weekdays to daysOfMonth format and add it to daysOfMonth list.
 // Returns a combined string with daysOfMonth and weekdays.
 func (cron *cron) addWeekdaysToDaysOfMonth(org *string) *string {
-	s := strings.Split(*cron.normalized, columnSeparator)[4]
+	s := strings.Split(cron.normalized, columnSeparator)[4]
 	switch {
 	case *org == wildCard && s == wildCard:
 		w := wildCard
@@ -47,8 +47,8 @@ func (cron *cron) addWeekdays(to *int) *string {
 
 	// If we started from a new month set current day to 01.
 	// Since we need to start parsing from day 01 in these cases.
-	if *cron.next.future {
-		if *cron.next.futureMonth {
+	if cron.next.future {
+		if cron.next.futureMonth {
 			date, _ = time.Parse("2006-01-02", fmt.Sprintf("%v-%v-01", cron.next.year, cron.convertAndAppendMonth()))
 		}
 		today = int(date.Weekday())

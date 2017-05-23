@@ -4,7 +4,7 @@ import "strings"
 
 // convertMarcos will convert common non-standard cron macros into a cron line. Returns string.
 func (cron *cron) convertMarcos() *string {
-	return conversionMacros.conversion(cron.raw)
+	return conversionMacros.conversion(&cron.raw)
 }
 
 // convertDaysOfWeek will convert character based version of days of the week into numeric. Returns string.

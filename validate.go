@@ -58,23 +58,23 @@ func (cron *cron) validateAndSimplify() error {
 }
 
 func (cron *cron) validateAndSimplifyMinutes() error {
-	return allowedMinutes.validate(cron.columns.minutes)
+	return allowedMinutes.validate(&cron.columns.minutes)
 }
 
 func (cron *cron) validateAndSimplifyHours() error {
-	return allowedHours.validate(cron.columns.hours)
+	return allowedHours.validate(&cron.columns.hours)
 }
 
 func (cron *cron) validateAndSimplifyDaysOfMonth() error {
-	return allowedDaysOfMonth.validate(cron.columns.daysOfMonth)
+	return allowedDaysOfMonth.validate(&cron.columns.daysOfMonth)
 }
 
 func (cron *cron) validateAndSimplifyMonths() error {
-	return allowedMonths.validate(cron.columns.months)
+	return allowedMonths.validate(&cron.columns.months)
 }
 
 func (cron *cron) validateAndSimplifyDaysOfWeek() error {
-	return allowedDaysOfWeek.validate(cron.columns.daysOfWeek)
+	return allowedDaysOfWeek.validate(&cron.columns.daysOfWeek)
 }
 
 // validate will use the specified validate slice and check that the supplied string is valid. Returns error.

@@ -7,7 +7,7 @@ import (
 
 // Scheduler contains the jobs that the scheduler should run as well as a bool for if we should Run or not.
 type Scheduler struct {
-	running *bool
+	running bool
 	ticker  *time.Ticker
 	jobs    *[]*Job
 }
@@ -24,7 +24,7 @@ func (sched *Scheduler) Start() {
 	go sched.run()
 
 	running := true
-	sched.running = &running
+	sched.running = running
 }
 
 func (sched *Scheduler) run() {
@@ -38,5 +38,5 @@ func (sched *Scheduler) Stop() {
 	sched.ticker.Stop()
 
 	running := false
-	sched.running = &running
+	sched.running = running
 }

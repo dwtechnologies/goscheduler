@@ -18,79 +18,79 @@ func (cron *cron) setField(t *int, s *string, field *string, extra *bool, future
 }
 
 func (cron *cron) setFieldMinute(t *int, s *string, field *string, extra *bool, future *bool) {
-	if *cron.next.futureHour || *cron.next.futureDayOfMonth || *cron.next.futureMonth {
-		cron.next.minute = t
+	if cron.next.futureHour || cron.next.futureDayOfMonth || cron.next.futureMonth {
+		cron.next.minute = *t
 		return
 	}
-	if *cron.next.futureRun {
+	if cron.next.futureRun {
 		return
 	}
 
-	*cron.next.minute += *t
+	cron.next.minute += *t
 	if *extra {
-		*cron.next.hour++
+		cron.next.hour++
 	}
 }
 
 func (cron *cron) setFieldHour(t *int, s *string, field *string, extra *bool, future *bool) {
-	if *cron.next.futureHour || *cron.next.futureDayOfMonth || *cron.next.futureMonth {
-		cron.next.hour = t
+	if cron.next.futureHour || cron.next.futureDayOfMonth || cron.next.futureMonth {
+		cron.next.hour = *t
 		return
 	}
-	if *cron.next.futureRun {
+	if cron.next.futureRun {
 		return
 	}
 
-	*cron.next.hour += *t
+	cron.next.hour += *t
 	if *extra {
-		*cron.next.minute = 0
-		*cron.next.dayOfMonth++
+		cron.next.minute = 0
+		cron.next.dayOfMonth++
 	}
 	if *future {
-		*cron.next.futureHour = true
-		*cron.next.future = true
+		cron.next.futureHour = true
+		cron.next.future = true
 	}
 }
 
 func (cron *cron) setFieldDayOfMonth(t *int, s *string, field *string, extra *bool, future *bool) {
-	if *cron.next.futureDayOfMonth || *cron.next.futureMonth {
-		cron.next.dayOfMonth = t
+	if cron.next.futureDayOfMonth || cron.next.futureMonth {
+		cron.next.dayOfMonth = *t
 		return
 	}
-	if *cron.next.futureRun {
+	if cron.next.futureRun {
 		return
 	}
 
-	*cron.next.dayOfMonth += *t
+	cron.next.dayOfMonth += *t
 	if *extra {
-		*cron.next.minute = 0
-		*cron.next.hour = 0
-		*cron.next.month++
+		cron.next.minute = 0
+		cron.next.hour = 0
+		cron.next.month++
 	}
 	if *future {
-		*cron.next.futureDayOfMonth = true
-		*cron.next.future = true
+		cron.next.futureDayOfMonth = true
+		cron.next.future = true
 	}
 }
 
 func (cron *cron) setFieldMonth(t *int, s *string, field *string, extra *bool, future *bool) {
-	if *cron.next.futureMonth {
-		cron.next.month = t
+	if cron.next.futureMonth {
+		cron.next.month = *t
 		return
 	}
-	if *cron.next.futureRun {
+	if cron.next.futureRun {
 		return
 	}
 
-	*cron.next.month += *t
+	cron.next.month += *t
 	if *extra {
-		*cron.next.minute = 0
-		*cron.next.hour = 0
-		*cron.next.dayOfMonth = 1
-		*cron.next.year++
+		cron.next.minute = 0
+		cron.next.hour = 0
+		cron.next.dayOfMonth = 1
+		cron.next.year++
 	}
 	if *future {
-		*cron.next.futureMonth = true
-		*cron.next.future = true
+		cron.next.futureMonth = true
+		cron.next.future = true
 	}
 }

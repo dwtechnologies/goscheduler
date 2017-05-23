@@ -13,49 +13,49 @@ const (
 )
 
 type nextDateTime struct {
-	minute     *int
-	hour       *int
-	dayOfMonth *int
-	month      *int
-	dayOfWeek  *int
-	year       *int
+	minute     int
+	hour       int
+	dayOfMonth int
+	month      int
+	dayOfWeek  int
+	year       int
 	time       *time.Time
 
-	future           *bool
-	futureRun        *bool
-	futureHour       *bool
-	futureDayOfMonth *bool
-	futureMonth      *bool
+	future           bool
+	futureRun        bool
+	futureHour       bool
+	futureDayOfMonth bool
+	futureMonth      bool
 }
 
-func (job *Job) nextRun() string {
+func (job *Job) genNextRun() *int64 {
 	now := time.Now().Add(time.Minute)
-	year := now.Year()
-	next := &nextDateTime{time: &now, year: &year}
+	job.cron.next = &nextDateTime{
+		time: &now,
+		year: now.Year(),
+	}
 	job.next()
 
-	job.cron.next = next
-	return job.cron.dateString()
-}
+	nextRun, _ := time.Parse("2006-01-02 15:04", fmt.Sprintf("%v-%v-%v %v:%v", job.cron.next.year, job.cron.convertAndAppendMonth(), job.cron.convertAndAppendDayOfMonth(), job.cron.convertAndAppendHour(), job.cron.convertAndAppendMinute()))
+	diff := nextRun.Unix() - now.Unix()
 
-func (cron *cron) dateString() string {
-	return fmt.Sprintf("%v-%v-%v %v:%v:00", cron.next.year, cron.convertAndAppendMonth(), cron.convertAndAppendDayOfMonth(), cron.convertAndAppendHour(), cron.convertAndAppendMinute())
+	return &diff
 }
 
 func (cron *cron) convertAndAppendMinute() *string {
-	return cron.convertAndAppend(strconv.Itoa(*cron.next.minute))
+	return cron.convertAndAppend(strconv.Itoa(cron.next.minute))
 }
 
 func (cron *cron) convertAndAppendHour() *string {
-	return cron.convertAndAppend(strconv.Itoa(*cron.next.hour))
+	return cron.convertAndAppend(strconv.Itoa(cron.next.hour))
 }
 
 func (cron *cron) convertAndAppendDayOfMonth() *string {
-	return cron.convertAndAppend(strconv.Itoa(*cron.next.dayOfMonth))
+	return cron.convertAndAppend(strconv.Itoa(cron.next.dayOfMonth))
 }
 
 func (cron *cron) convertAndAppendMonth() *string {
-	return cron.convertAndAppend(strconv.Itoa(*cron.next.month))
+	return cron.convertAndAppend(strconv.Itoa(cron.next.month))
 }
 
 func (*cron) convertAndAppend(str string) *string {
@@ -72,8 +72,8 @@ func (job *Job) next() {
 		job.cron.nextField(&field)
 	}
 
-	if !*job.cron.next.futureRun {
-		*job.cron.next.futureRun = true
+	if !job.cron.next.futureRun {
+		job.cron.next.futureRun = true
 		job.next()
 	}
 }
@@ -84,17 +84,17 @@ func (cron *cron) nextField(field *string) {
 
 	switch *field {
 	case "minute":
-		val = strings.Split(*cron.normalized, columnSeparator)[0]
+		val = strings.Split(cron.normalized, columnSeparator)[0]
 		now = cron.next.time.Minute()
 	case "hour":
-		val = strings.Split(*cron.normalized, columnSeparator)[1]
+		val = strings.Split(cron.normalized, columnSeparator)[1]
 		now = cron.next.time.Hour()
 	case "month":
-		val = strings.Split(*cron.normalized, columnSeparator)[3]
+		val = strings.Split(cron.normalized, columnSeparator)[3]
 		_, m, _ := cron.next.time.Date()
 		now = int(m)
 	case "dayOfMonth":
-		val = strings.Split(*cron.normalized, columnSeparator)[2]
+		val = strings.Split(cron.normalized, columnSeparator)[2]
 		// Add weekdays to the list of dayOfMonth.
 		val = *(cron).addWeekdaysToDaysOfMonth(&val)
 		now = cron.next.time.Day()
@@ -110,7 +110,7 @@ func (cron *cron) getNextFromValues(t *int, s *string, field *string) {
 	}
 	sliceint := cron.createSliceAndSort(s)
 
-	if *cron.next.futureRun && *cron.next.futureMonth {
+	if cron.next.futureRun && cron.next.futureMonth {
 		extra := false
 		future := false
 		cron.setField(&(*sliceint)[0], s, field, &extra, &future)
@@ -136,7 +136,7 @@ func (cron *cron) wildcard(t *int, s *string, field *string) {
 	extra := false
 	future := false
 
-	if *cron.next.futureRun {
+	if cron.next.futureRun {
 		if *field == "month" || *field == "dayOfMonth" {
 			val = 1
 		}
