@@ -29,14 +29,15 @@ type nextDateTime struct {
 }
 
 func (job *Job) genNextRun() *int64 {
-	now := time.Now().Add(time.Minute)
+	now := time.Now()
+	genTime := now.Add(time.Duration(60-now.Second()) * time.Second)
 	job.cron.next = &nextDateTime{
-		time: &now,
-		year: now.Year(),
+		time: &genTime,
+		year: genTime.Year(),
 	}
 	job.next()
 
-	nextRun, _ := time.Parse("2006-01-02 15:04", fmt.Sprintf("%v-%v-%v %v:%v", job.cron.next.year, job.cron.convertAndAppendMonth(), job.cron.convertAndAppendDayOfMonth(), job.cron.convertAndAppendHour(), job.cron.convertAndAppendMinute()))
+	nextRun, _ := time.ParseInLocation(format, fmt.Sprintf("%v-%v-%v %v:%v", job.cron.next.year, *job.cron.convertAndAppendMonth(), *job.cron.convertAndAppendDayOfMonth(), *job.cron.convertAndAppendHour(), *job.cron.convertAndAppendMinute()), time.Local)
 	diff := nextRun.Unix() - now.Unix()
 
 	return &diff

@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+const (
+	format = "2006-01-02 15:04"
+)
+
 type cron struct {
 	raw        string
 	normalized string
@@ -22,13 +26,13 @@ type cronColumns struct {
 
 // NextRun will return a time.Time object containing the date and time for when the next execution of the job will be executed.
 func (job *Job) NextRun() time.Time {
-	nextRun, _ := time.Parse("2006-01-02 15:04", fmt.Sprintf("%v-%v-%v %v:%v", job.cron.next.year, *job.cron.convertAndAppendMonth(), *job.cron.convertAndAppendDayOfMonth(), *job.cron.convertAndAppendHour(), *job.cron.convertAndAppendMinute()))
+	nextRun, _ := time.ParseInLocation(format, fmt.Sprintf("%v-%v-%v %v:%v", job.cron.next.year, *job.cron.convertAndAppendMonth(), *job.cron.convertAndAppendDayOfMonth(), *job.cron.convertAndAppendHour(), *job.cron.convertAndAppendMinute()), time.Local)
 	return nextRun
 }
 
 // NextRunString will return a string containing the date and time for when the next execution of the job will be executed.
 func (job *Job) NextRunString() string {
-	return fmt.Sprintf("%v-%v-%v %v:%v:00", job.cron.next.year, *job.cron.convertAndAppendMonth(), *job.cron.convertAndAppendDayOfMonth(), *job.cron.convertAndAppendHour(), *job.cron.convertAndAppendMinute())
+	return fmt.Sprintf("%v-%v-%v %v:%v", job.cron.next.year, *job.cron.convertAndAppendMonth(), *job.cron.convertAndAppendDayOfMonth(), *job.cron.convertAndAppendHour(), *job.cron.convertAndAppendMinute())
 }
 
 // CronString will return the normalized crontab as a string. Returns string.

@@ -8,25 +8,36 @@ import (
 
 // Job contains all the information about a job that can be scheduled.
 type Job struct {
-	name           string
-	enabled        bool
+	name    string
+	enabled bool
+
 	running        bool
 	disableOnError bool
+	quit           bool
 	count          int
 	err            error
-	cron           *cron
-	function       *reflect.Value
-	parameters     *[]reflect.Value
-	lastResult     *[]reflect.Value
-	lastRunTime    *time.Time
-	timer          *time.Timer
+
+	// Cron and function
+	cron        *cron
+	function    *reflect.Value
+	parameters  *[]reflect.Value
+	lastResult  *[]reflect.Value
+	lastRunTime *time.Time
+
+	// Trigger
+	timer *time.Timer
 }
 
 // AddJob takes name, a standard POSIX cron syntax, function and function parameters and turns it into a jobb.
 // Returns *Job and error.
 func (sched *Scheduler) AddJob(name string, raw string, f interface{}, p ...interface{}) (*Job, error) {
 	cron := &cron{raw: raw}
-	job := &Job{name: name, enabled: true, cron: cron}
+	job := &Job{
+		name:    name,
+		enabled: true,
+		cron:    cron,
+		timer:   nil,
+	}
 
 	// Generate a normalized string and check for errors.
 	normalized, err := job.cron.normalizeCron()
@@ -46,17 +57,22 @@ func (sched *Scheduler) AddJob(name string, raw string, f interface{}, p ...inte
 	*sched.jobs = append(*sched.jobs, job)
 
 	// Generate next execution time and add it to the timer.
-	job.genTimer()
+	job.Start()
 
 	return job, nil
 }
 
-// LastRunTime ff
+// LastRunTime return the date and time of when the specified job was last run. Returns *time.Time
 func (job *Job) LastRunTime() (*time.Time, error) {
 	if job.lastRunTime == nil {
 		return nil, fmt.Errorf("Last Run Time was nil, so it seems it has never been run. In job %v", job.name)
 	}
 	return job.lastRunTime, nil
+}
+
+// Stop will stop the specified job from running. It will however let the current running job finish before exiting.
+func (job *Job) Stop() {
+	job.quit = true
 }
 
 // Start will start the specified according to it's cron scheduled.
@@ -65,35 +81,36 @@ func (job *Job) Start() {
 }
 
 func (job *Job) run() {
-	for t := range job.timer.C {
-		// Set last run time.
-		job.lastRunTime = &t
+	for {
+		job.genTimer()
+		for t := range job.timer.C {
+			job.lastRunTime = &t
+			result := job.function.Call(*job.parameters)
 
-		// Run the function with the supplied parameters.
-		result := job.function.Call(*job.parameters)
+			// Check to see if the last result value is error.
+			job.checkFuncError(&result)
 
-		// Check to see if the last result value is error.
-		for _, val := range result {
-			if val.Interface().(error) != nil {
-				err := val.Interface().(error)
-				job.err = err
-			}
+			job.lastResult = &result
+			break
 		}
+		job.timer.Stop()
 
-		// Set the result.
-		job.lastResult = &result
+		if job.quit {
+			return
+		}
 	}
+}
 
-	// Generate next execution time and add it to the timer.
-	job.genTimer()
+func (job *Job) checkFuncError(result *[]reflect.Value) {
+	for _, val := range *result {
+		if val.Interface().(error) != nil {
+			err := val.Interface().(error)
+			job.err = err
+		}
+	}
 }
 
 func (job *Job) genTimer() {
-	// Generate the next execution time for the job based on cron.
 	diff := job.genNextRun()
-	if *diff < 0 {
-		*diff = 1
-	}
-
-	job.timer = time.NewTimer(time.Duration(*diff) * time.Second)
+	job.timer = time.NewTimer(time.Duration(int(*diff)) * time.Second)
 }

@@ -49,7 +49,7 @@ func (cron *cron) addWeekdays(to *int) *string {
 	// Since we need to start parsing from day 01 in these cases.
 	if cron.next.future {
 		if cron.next.futureMonth {
-			date, _ = time.Parse("2006-01-02", fmt.Sprintf("%v-%v-01", cron.next.year, cron.convertAndAppendMonth()))
+			date, _ = time.ParseInLocation("2006-01-02", fmt.Sprintf("%v-%v-01", cron.next.year, cron.convertAndAppendMonth()), time.Local)
 		}
 		today = int(date.Weekday())
 		diff = *to - today
